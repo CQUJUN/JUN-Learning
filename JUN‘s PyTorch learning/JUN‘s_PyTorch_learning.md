@@ -244,7 +244,7 @@ https://pytorch.org/
 
 选择适配本机CPU和GPU的版本
 
-![image-20240927104250907](./JUN‘s PyTorch learning.assets/image-20240927104250907.png)
+![1](./JUN‘s_PyTorch_learning.assets/1.png)
 
 将该命令输入到新构建的conda环境里面，等待下载
 
@@ -294,7 +294,7 @@ torch.cuda.is_available()
 
 选择conda.exe后会自动加载已有的虚拟环境
 
-![image-20240927161458939](./JUN‘s PyTorch learning.assets/image-20240927161458939.png)
+![2](./JUN‘s_PyTorch_learning.assets/2.png)
 
 打开python控制台进行验证
 
@@ -326,7 +326,7 @@ torch.cuda.is_available()
 
 3. **选择新建的conda解释器**
 
-   ![image-20240927165307169](./JUN‘s PyTorch learning.assets/image-20240927165307169.png)
+   ![3](./JUN‘s_PyTorch_learning.assets/3.png)
 
 4. **代码检验是否安装成功**
 
@@ -401,13 +401,15 @@ pytorch 和 tensorflow 是目前主推的两个框架，他们的区别在于是
 
    1. 常用的第一种数据形式，文件夹的名称是它的label。      
 
-      ![通过不同的文件夹将数据的标签和数据本身分开储存。](./JUN‘s PyTorch learning.assets/https%3A%2F%2Fprod-files-secure.s3.us-west-2.amazonaws.com%2F7743fca7-7fbe-49da-88fd-2cbe749f722f%2F2ffa6a1c-1380-425b-92f0-0819575e3fc1%2FUntitled.png)
+      ![4](./JUN‘s_PyTorch_learning.assets/4.png)
 
       通过不同的文件夹将数据的标签和数据本身分开储存。
 
    2. 常用的第二种形式，lebel为文本格式，文本名称为图片名称，文本中的内容为对应的label。
 
-   ![文件夹的名称即为 label，名称内是数据和编号。](./JUN‘s PyTorch learning.assets/https%3A%2F%2Fprod-files-secure.s3.us-west-2.amazonaws.com%2F7743fca7-7fbe-49da-88fd-2cbe749f722f%2Fc8e16f70-173a-4d0b-bc41-897f5263907e%2FUntitled.png)文件夹的名称即为 label，名称内是数据和编号。 
+   ![5](./JUN‘s_PyTorch_learning.assets/5.png)
+
+   > 文件夹的名称即为 label，名称内是数据和编号。 
 
 3. **数据加载：**
 
