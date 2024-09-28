@@ -6,7 +6,7 @@
 
 ## 3. 在空文件夹内，右键选择Git Bash Here
 
-![5ac1a689d509a7f82bc6a09b7c023bb8](./git仓库使用.assets/5ac1a689d509a7f82bc6a09b7c023bb8.png)
+![1](./git仓库使用.assets/1.png)
 
 ## 4. 弹出GIT Bash框
 
@@ -23,7 +23,7 @@ git clone  https://github.com/CQUJUN/JUN-Learning.git  //输入自己仓库
 
 ## 6. 把需要上传的文件夹放入到远程仓库文件夹内
 
-![image-20240929011840377](./git仓库使用.assets/image-20240929011840377.png)
+![2](./git仓库使用.assets/2.png)
 
 ## 7. 上传
 
