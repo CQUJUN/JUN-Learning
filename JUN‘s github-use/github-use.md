@@ -21,6 +21,17 @@ git clone  https://github.com/CQUJUN/JUN-Learning.git  //输入自己仓库
 
 克隆成功，自动生成远程仓库文件
 
+若克隆失败则
+
+1. **取消代理设置**
+
+   这是最常见的解决方法之一，通过在终端执行以下命令，可以取消 Git 的代理设置：
+
+   ```shell
+   git config --global --unset http.proxy 
+   git config --global --unset https.proxy
+   ```
+
 ## 6. 把需要上传的文件夹放入到远程仓库文件夹内
 
 ![2](./github-use.assets/2.png)
