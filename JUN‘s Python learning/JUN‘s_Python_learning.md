@@ -394,7 +394,123 @@ my_len(name)
 
    > `return` 表示返回，后续代码都不会被执行
 
-### 3.3 使用模块中的函数
+### 3.3 函数的多返回值
+
+在Python中，函数可以返回多个值，通常通过**元组**实现
+
+当函数返回多个值时，Python会将这些值打包成一个**元组**，并且可以在调用函数时直接解包这些值
+
+```python
+def calculate(a, b):
+    sum_result = a + b
+    product_result = a * b
+    return sum_result, product_result
+
+# 调用函数并解包返回值，接收顺序和return顺序一样
+sum_val, product_val = calculate(5, 3)
+
+print("Sum:", sum_val)        # 输出: Sum: 8
+print("Product:", product_val) # 输出: Product: 15
+```
+
+### 3.4 函数的多种参数使用形式
+
+1. **位置参数**
+
+   这是最基本的参数形式，按照位置传递参数
+
+   ```python
+   def add(a, b):
+       return a + b
+   
+   result = add(3, 5)  # 位置参数
+   ```
+
+2. **关键字参数**
+
+   可以通过指定参数名来传递值，这样可以不按照位置顺序传递参数，使函数更清晰更容易使用
+
+   ```python
+   def greet(name, age):
+       return f"Hello, {name}. You are {age} years old."
+   
+   message = greet(age=30, name="Alice")  # 关键字参数
+   ```
+
+3. **缺省参数(默认参数)**
+
+   可以为参数指定默认值，如果在调用时未提供这些参数，则使用默认值
+
+   ```python
+   def user_info(name, age=17, gender='M'):
+       print(f"姓名{name}, 年龄{age}, 性别{gender}")
+       
+   user_info(name='JUN')
+   ```
+
+   > 注意：但只能放在最后，中间不能间隔一个非缺省参数
+
+4. **不定长参数**
+
+   使用`*args`和`**kwargs`来处理可变数量的参数。
+
+   - `*args`位置不定长-用于接收可变数量的位置参数(传进的参数会根据传入位置合并为一个元祖)。
+
+     ```python
+     def sum_all(*args):
+         return sum(args)
+     
+     result = sum_all(1, 2, 3, 4)  # 结果是10
+     ```
+
+   - `**kwargs`关键字不定长-用于接收可变数量的关键字参数(传进的参数会根据传入位置合并为一个字典)
+
+     ```python
+     def print_info(**kwargs):
+         for key, value in kwargs.items():
+             print(f"{key}: {value}")
+     
+     print_info(name="Alice", age=30, city="New York")
+     ```
+
+### 3.5 函数作为参数传递
+
+1. **函数可以作为参数传递给其他函数**
+
+   定义一个函数，然后将其作为参数传递给另一个函数
+
+   ```python
+   def add(x, y):
+       return x + y
+   
+   def operate(func, a, b):
+       return func(a, b)
+   
+   result = operate(add, 3, 5)  # 传递函数和参数
+   print(result)  # 输出: 8
+   ```
+
+2. **匿名函数 (Lambda 函数)**
+
+   **语法：**
+
+   `lambda arguments: expression`
+
+   - `arguments`：输入参数，可以是多个，用逗号分隔
+
+   - `expression`：返回的计算结果，必须是单一的表达式
+
+   **示例：**
+
+   ```python
+   def operate(func, a, b):
+       return func(a, b)			# 确定了func是函数
+   
+   result = operate(lambda x, y: x * y, 4, 6)  # 使用匿名函数
+   print(result)  # 输出: 24
+   ```
+
+### 3.6 使用模块中的函数
 
 > 模块是 Python 程序架构的一个核心概念
 
@@ -402,9 +518,311 @@ my_len(name)
 - 每一个以扩展名 `.py` 结尾的 `Python` 源代码文件都是一个 **模块**
 - 在模块中定义的 **全局变量、函数** 都是模块能够提供给外界直接使用的工具
 
+> Python包的功能，是一个文件夹，可存放一堆模块，额外带有`_init_.py`文件：**有该文件才是包**，不然就是普通文件夹
+>
+> 导入包：import 包名.模块名
 
+#### **3.6.1 导入工具包中函数方式**
 
+**核心语法：**`[from 模块名] import [模块| 类| 变量| 函数| *] [as 别名]`
 
+1. **导入整个模块**
 
+   ```python
+   import math
+   
+   result = math.sqrt(16)  # 调用 math 模块中的 sqrt 函数
+   print(result)  # 输出: 4.0
+   ```
 
+2. **导入特定函数**
 
+   ```python
+   from math import factorial
+   
+   result = factorial(5)  # 直接调用 factorial 函数
+   print(result)  # 输出: 120
+   ```
+
+3. **导入多个函数**
+
+   ```python
+   from math import sin, cos, pi
+   
+   print(sin(pi / 2))  # 输出: 1.0
+   print(cos(0))      # 输出: 1.0
+   ```
+
+4. **使用别名**
+
+   ```python
+   import pandas as pd  # 使用 as 将 pandas 模块设置为别名 pd
+   
+   data = pd.DataFrame({'A': [1, 2], 'B': [3, 4]})
+   print(data)
+   ```
+
+5. **导入所有函数**
+
+   - 如果需要导入模块中的所有函数，可以使用 `*`，但这通常**不推荐**，因为可能会导致**命名冲突**：
+
+     ```python
+     from math import *
+     
+     print(sqrt(16))  # 直接使用 sqrt 函数
+     ```
+
+   - 导入软件包中的所有函数
+
+     ```python
+     from JUN_PACK import *
+     ```
+
+     `JUN_PACK`为软件包名称
+
+   - `__all__`变量：作用在`*`上，**在模块中**使用时实现只导入指定函数，其他函数导入不了
+
+     **在软件包中**，通过在`_init_.py`里的`__all__`变量，控制`import *`只导入指定的模块
+
+     ```python
+     # init.py中
+     __all__ = ['my_mod1']
+     ```
+
+     如上当使用`from JUN_PACK import *`时，将只导入`my_mod1.py`
+
+#### **3.6.2 编写可重用的模块**
+
+在Python中，`__main__` 是一个特殊的变量，主要编写 **可重用且可测试** 的代码
+
+```py
+# example.py
+def main():
+    print("Main function is running.")
+
+if __name__ == "__main__":
+    main()
+```
+
+在直接运行 `example.py` 时，会调用 `main()` 函数；如果导入这个模块，则不会执行 `main()`
+
+#### **3.6.3 模块函数例子**
+
+- 新建`JUN_PACK`软件包
+
+- 在软件包内新建 `my_mod.py`工具包文件，并输入：
+
+  ```python
+  def info_print1():
+      print("mod1 hello world")
+      
+  if __name__ == "__main__":
+  	info_print1()
+  ```
+
+- 新建 `fun_test.py` 主函数文件，并且编写以下代码：
+
+  ```python
+  import JUN_PACK.my_mod1
+  
+  JUN_PACK.my_mod1.info_print1()
+  ```
+
+  或者：
+
+  ```python
+  from JUN_PACK import my_mod1
+  
+  my_mod1.info_print1()
+  ```
+
+- 可以 **在一个 Python 文件** 中 **定义 变量 或者 函数**
+- 然后在 另外一个文件中 使用 `import` 导入这个模块
+- 导入之后，就可以使用 `模块名.变量` / `模块名.函数` 的方式，使用这个模块中定义的变量或者函数
+
+## 4. 数据容器
+
+在 `Python` 中，数据容器指的是：**列表(`list`)、元祖(`tuple`)、字符串(`str`)、集合(`set`)、字典(`dict`)**
+
+数据容器是用于存储和管理多个数据项的结构
+
+### 4.1 列表
+
+#### 4.1.1 列表的定义
+
+- `List` (列表) 是 `Python` 中使用 **最频繁** 的数据类型，在其他语言中通常叫作 **数组**
+- 专门用于存储 **一串信息**
+- 列表用 `[]` 定义，**数据**之间使用 `,` 分隔
+- 列表的 **索引** 从 `0` 开始
+  - **索引** 就是数据在 **列表** 中的位置编号，索引 又可以被称为 **下标**
+  - 从头到尾顺序为`0,1,2,...`
+  - 从尾到头顺序为`-1,-2,-3,...`
+
+> 注意：从列表中取值时，如果 **超出索引范围**，程序会报错
+
+1. **定义空列表**
+
+   ```python
+   my_list_empty = list()
+   ```
+
+2. **定义列表**
+
+   ```python
+   list1 = ['JUN', 'LU', 'ZI']
+   
+   list2 = [[1, 2, 3], list1[0], 666, True]
+   ```
+
+#### 4.1.2 列表常用操作
+
+1. **访问元素**：使用索引访问元素，索引从0开始，从头到尾顺序为`0,1,2,...`，从尾到头顺序为`-1,-2,-3,...`
+
+   ```python
+   print(list2[0][1])
+   ```
+
+2. **查找某元素在列表内的下标索引(第一个匹配项)**
+
+   ```python
+   index = list2.index([1, 2, 3])
+   
+   print(f"下标索引值是{index}")
+   ```
+
+3. **指定下标位置插入指定元素**
+
+   语法：`list.insert(索引,数据)`
+
+   ```python
+   list2.insert(1, "best")
+   
+   print(f"插入元素后结果是{list2}")
+   ```
+
+4. **在列表尾部追加单个新元素**
+
+   ```python
+   list2.append(666)
+   
+   print(f"追加元素后结果是{list2}")
+   ```
+
+5. **在列表尾部追加一批元素**
+
+   ```python
+   new_list = [3, 2, 1]
+   
+   list2.extend(new_list)
+   
+   print(f"追加新列表后结果是{list2}")
+   ```
+
+6. **删除元素：**
+
+   - **删除元素 del 列表[下标]**
+
+     `del` 关键字本质上是用来 **将一个变量从内存中删除的**
+
+     ```python
+     del list2[0]
+     
+     print(f"删除元素后结果是{list2}")
+     ```
+
+   - **删除元素 列表.pop(下标)-将指定元素取出来并返回出去**
+
+     ```python
+     back = list2.pop(0)
+     
+     print(f"删除元素后结果是{list2}，取出的元素是{back}")
+     ```
+
+7. **删除某元素在列表中的第一个匹配项**
+
+   ```python
+   list2.remove(666)
+   
+   print(f"删除指定元素后结果是{list2}")
+   ```
+
+8. **清空列表**
+
+   ```python
+   list2.clear()
+   
+   print(f"清空列表后结果是{list2}")
+   ```
+
+9. **统计某元素数量**
+
+   ```python
+   list2 = [[1, 2, 3], list1[0], 666, True]
+   
+   count = list2.count(666)
+   
+   print(f"指定元素数量是{count}")
+   ```
+
+10. **统计列表多少元素**
+
+    ```python
+    length = len(list2)
+    
+    print(f"元素数量共{length}")
+    ```
+
+#### 4.1.3 列表的循环遍历
+
+- **遍历**就是**从头到尾**依次从**列表**中获取数据
+  - 在**循环内部**针对**每一个元素**，执行相同的操作
+- 在 `Python` 中为了提高列表的遍历效率，专门提供的 **迭代 iteration 遍历**
+- 使用 `for` 就能够实现迭代遍历
+
+```python
+list1 = ['JUN', 'LU', 'ZI']
+
+list2 = [[1, 2, 3], list1[0], 666, True]
+
+# 使用迭代遍历列表
+"""
+顺序从列表中依次获取数据，每一次循环过程中，数据都会保存在my_name 这个变量中，
+在循环体内部可以访问当前这一次获取到的数据，直到列表地址访问结束
+"""
+for my_list in list2:
+    print("列表内容是 %s" % my_list)
+```
+
+- 列表中**可以存储不同类型的数据**
+- 在开发中，更多的应用场景是
+  1. **列表**存储相同类型的数据
+  2. 通过**迭代遍历**，在循环体内部，针对列表中的每一项元素，执行相同的操作
+
+#### 4.1.4 列表推导式
+
+基本语法：`new_list = [expression for item in iterable]`
+
+- **expression**：每个元素在新列表中的表示形式，可以是对 `item` 的操作。
+- **item**：用于从可迭代对象中提取元素的部分。
+- **iterable**：可以是列表、元组、字符串、范围等可迭代对象。
+
+1. **从一个数字列表生成其平方值的新列表：**
+
+   ```python
+   numbers = [1, 2, 3, 4, 5]
+   
+   squared_numbers = [x**2 for x in numbers]
+   
+   print(squared_numbers)  # 输出: [1, 4, 9, 16, 25]
+   ```
+
+2. **列表推导式可以包含条件，允许你筛选元素**
+
+   ```python
+   # 只生成偶数的平方
+   even_squared = [x**2 for x in numbers if x % 2 == 0]
+   
+   print(even_squared)  # 输出: [4, 16]
+   ```
+
+   
