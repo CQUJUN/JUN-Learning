@@ -57,3 +57,16 @@ git push
 | git add .                    | 将工作区的文件添加到暂存区（“ . ”是当前目录下的所有文件，也可只输入文件夹名称） |
 | git commit -m “你的提交信息” | 将暂存区的文件添加到本地仓库                                 |
 | git push                     | 提交到远程仓库（可能需要你输入帐号和密码）                   |
+
+# 为git bash设置代理
+
+打开 `git bash`，然后输入
+
+```stylus
+git config --global http.proxy "http://127.0.0.1:1080"
+git config --global https.proxy "https://127.0.0.1:1080"
+```
+
+端口号为自己设置，设置成不与电脑冲突的即可
+
+这样设置之后，`git clone https://github.com/username/repo.git` 的速度基本能跑满带宽
