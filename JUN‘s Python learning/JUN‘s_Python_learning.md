@@ -1346,37 +1346,724 @@ for k in xiaoming_dict:
 
 ### 4.7 数据容器的通用功能
 
-1. **内置函数**
+#### **4.7.1 内置函数**
 
-   | 函数                | 描述                 | 备注                        |
-   | ------------------- | -------------------- | --------------------------- |
-   | `len(item)`         | 计算容器中元素个数   |                             |
-   | `del(item)`         | 删除变量             | del 有两种方式-关键字或函数 |
-   | `max(item)`         | 返回容器中元素最大值 | 如果是字典，只针对 key 比较 |
-   | `min(item)`         | 返回容器中元素最小值 | 如果是字典，只针对 key 比较 |
-   | `cmp(item1, item2)` | 比较两个值           | python3.x中取消             |
+| 函数                | 描述                 | 备注                        |
+| ------------------- | -------------------- | --------------------------- |
+| `len(item)`         | 计算容器中元素个数   |                             |
+| `del(item)`         | 删除变量             | del 有两种方式-关键字或函数 |
+| `max(item)`         | 返回容器中元素最大值 | 如果是字典，只针对 key 比较 |
+| `min(item)`         | 返回容器中元素最小值 | 如果是字典，只针对 key 比较 |
+| `cmp(item1, item2)` | 比较两个值           | python3.x中取消             |
 
-   > 注意：字符串的比较符合以下规则 `"0"<"A"<"a"`
+> 注意：字符串的比较符合以下规则 `"0"<"A"<"a"`
 
-2. **数据容器类型转换**
+#### **4.7.2 数据容器类型转换**
 
-   容器转列表：`list(item)`
-   容器转字符串：`str(item)`
-   容器转元祖：`tuple(item)`
-   容器转集合：`set(item)`
+- 容器转列表：`list(item)`
+- 容器转字符串：`str(item)`
+- 容器转元祖：`tuple(item)`
+- 容器转集合：`set(item)`
 
-3. **sorted排序**
+#### **4.7.3 sorted排序**
 
-   - 排序结果变成**列表对象**
-   - 从小到大：`sorted(item)`
-   - 从大到小：`sorted(item, [reverse=True])`
+- 排序结果变成**列表对象**
+- 从小到大：`sorted(item)`
+- 从大到小：`sorted(item, [reverse=True])`
+
+```python
+print(f"列表对象的排序结果：{sorted(my_list)}")
+print(f"元祖对象的排序结果：{sorted(my_tuple)}")
+print(f"字符串对象的排序结果：{sorted(my_str)}")
+print(f"集合对象的排序结果：{sorted(my_set)}")
+print(f"字典对象的排序结果：{sorted(my_dict)}")
+```
+
+#### **4.7.4 运算符(in、not in)**
+
+| 运算符         | Python表达式       | 结果               | 描述           | 支持的数据类型           |
+| -------------- | ------------------ | ------------------ | -------------- | ------------------------ |
+| `+`            | `[1,2]+[3,4]`      | `[1,2,3,4]`        | 合并           | 字符串、列表、元组       |
+| `*`            | `["Hi"]*3`         | `["Hi","Hi","Hi"]` | 重复           | 字符串、列表、元组       |
+| `in`           | `3 in (1,2,3)`     | `True`             | 元素是否存在   | 字符串、列表、元组、字典 |
+| `not in`       | `4 not in (1,2,3)` | `True`             | 元素是否不存在 | 字符串、列表、元组、字典 |
+| `> >= == < <=` | `(1,2,3)<(2,2,3)`  | `True`             | 元素比较       | 字符串、列表、元组       |
+
+- `in` 在对**字典**操作时，判断的是**字典的键**
+- `in` 和 `not in` 被称为**成员运算符**
+
+- **成员运算符**用于**测试**序列中是否包含指定的成员
+
+| 运算符   | 描述                                                | 实例                          |
+| -------- | --------------------------------------------------- | ----------------------------- |
+| `in`     | 如果在指定的序列中找到值返回 True，否则返回 False   | `3 in (1,2,3)` 返回 True      |
+| `not in` | 如果在指定的序列中没有找到值返回True，否则返回False | `3 not in (1,2,3)` 返回 False |
+
+>注意：在对字典操作时，判断的是**字典的键**
+
+## 5. 文件操作
+
+### 5.1 文件的概念
+
+计算机的文件，就是存储在某种长期存储设备上的一段数据
+
+### 5.2 文件的基本操作
+
+#### 5.2.1 操作文件的套路
+
+在计算机中要操作的文件的套路非常固定，一共包含三个步骤：
+
+1. 打开文件
+2. 读、写文件
+   - **读** 将文件内容读入内存
+   - **写** 将内存内容写入文件
+3. 关闭文件
+
+#### 5.2.2 操作文件的函数/方法
+
+- 在 Python 中要操作文件需要记住 **1个函数 和 3个方法**
+
+| 序号 | 函数/方法 | 说明                           |
+| ---- | --------- | ------------------------------ |
+| 01   | `open`    | 打开文件，并且返回文件操作对象 |
+| 02   | `read`    | 将文件内容读取到内存           |
+| 03   | `write`   | 将指定内容写入文件             |
+| 04   | `close`   | 关闭文件                       |
+
+- `open` 函数默认以**只读模式**打开文件，并且返回文件对象
+- `read/write/close` 三个方法都需要通过**文件对象**来调用
+
+#### **5.2.3 打开函数**
+
+1. **语法：**`open(name, mode, encoding)`
+
+2. **参数含义：**
+
+   `name`：要打开目标文件名的字符串(可以包含文件所在的具体路径)
+
+   `mode`：
+
+   **设置打开文件的模式(访问模式)**：
+
+   `r`：以只读方式打开文件
+
+   `w`：打开一个文件只用于写入，文件存在则从头开始编辑，原有内容会被删除。文件不存在则创建新文件
+
+   `a`：打开一个文件用于追加，文件存在则新的内容会写入到已有内容之后，文件不存在则创建新文件进行写入
+   只读、写入、追加
+
+   `encoding`：编码格式(推荐使用`UTF-8`)
+
+3. **注意事项：**
+
+   由于使用时`encoding`的顺序不是第三位所以要用关键字参数直接指定
+
+   如：`f = open('python.txt', 'r', encoding='utf-8')`
+
+   此时`'f'`是`'open'`函数的文件对象，对象拥有属性和方法，可以使用`对象.属性`或`对象.方法`对其访问
+
+#### 5.2.4 读操作相关方法
+
+1. **语法**：`文件对象.read(num)`
+
+   使用`read`后光标会停留在这次读的地方，下次会从这个地方开始读
+
+2. **参数含义：**
+
+   `num`：表示从文件中读取的数据长度，没传入`num`默认读取全部数据,返回内容是字符串
+
+3. **相关方法：**
+
+   `readlines()`：可以按照行的方式把整个文件的内容进行一次性读取，返回的是一个列表，其中每一行数据为一个元素
+
+   `readline()`：使用一次读取一行
+
+4. **示例：**
 
    ```python
-   print(f"列表对象的排序结果：{sorted(my_list)}")
-   print(f"元祖对象的排序结果：{sorted(my_tuple)}")
-   print(f"字符串对象的排序结果：{sorted(my_str)}")
-   print(f"集合对象的排序结果：{sorted(my_set)}")
-   print(f"字典对象的排序结果：{sorted(my_dict)}")
+   # 打开文件
+   f = open("D:\\Application\\pycharm\\python_learn\\pythonProject\\test.txt", 'r', encoding='utf-8')
+   print(type(f))
+   
+   # 读取文件 - read():使用read后光标会停留在这次读的地方，下次会从这个地方开始读
+   print(f"读取10个字节的结果{f.read(10)}")
+   print(f"读取全部内容的结果{f.read()}")
+   # 读取文件 - readlines()
+   lines = f.readlines()
+   print(f"lines对象类型：{type(lines)},内容是：{lines}")
+   # for循环读取文件行
+   for line in f:
+       print(f"每一行数据是{line}")
+   # 文件的关闭(不关闭导致该文件一直被Python占用)
+   f.close()
+   # with open as f语法操作文件(打开文件执行完函数体后会自动关闭该文件)
+   with open('test.txt', 'r', encoding='utf-8') as f:
+       for line in f:
+           print(f"每一行数据是{line}")
+   ```
+
+#### 5.2.5 写操作相关方法
+
+1. **写入操作：**
+
+   `'w'`
+
+   `write()`
+
+   直接调用`write`，内容并未真正写入文件，而是写入到程序的内存中(缓冲区)
+
+   当调用`flush`时才会真正写入文件
+
+2. **示例：**
+
+   ```python
+   # 打开文件
+   f = open('test2.txt', 'w', encoding='utf-8')
+   # write写入
+   f.write("hello world")
+   # flush刷新
+   f.flush()
+   # close关闭(其中也包含了flush的功能)
+   f.close()
+   ```
+
+#### 5.2.6 文件追加相关方法
+
+1. **文件追加操作：**
+
+   `'a'`
+
+   `write()`
+
+   直接调用`write`，内容并未真正写入文件，而是写入到程序的内存中(缓冲区)
+
+   当调用`flush`时才会真正写入文件
+
+   文件若已经存在则追加写入文件
+
+2. **示例：**
+
+   ```python
+   # 打开文件
+   f = open('test2.txt', 'a', encoding='utf-8')
+   # write写入
+   f.write("\nhello world")
+   # flush刷新
+   f.flush()
+   # close关闭(其中也包含了flush的功能,所以有close可以不需要flush)
+   f.close()
+   ```
+
+### 5.3 文本文件的编码方式
+
+- 文本文件存储的内容是基于**字符编码**的文件，常见的编码有 `ASCII`  编码，`UNICODE` 编码等
+
+>Python 2.x 默认使用 `ASCII` 编码
+>Python 3.x 默认使用 `UTF-8` 编码
+
+UTF-8是目前全球通用的编码格式，一般使用UTF-8(将内容转换为计算机能识别的二进制语言)
+
+## 6.  异常
+
+### 6.1 异常的概念
+
+- 程序在运行时，如果 `Python 解释器` 遇到一个错误，**会停止程序的执行，并且提示一些错误信息**，这就是**异常**
+- 程序停止执行并且提示错误信息这个动作，我们通常称之为：**抛出(raise)异常**
+
+>程序开发时，很难将所有的特殊情况都处理的面面俱到，通过**异常捕获**可以针对突发事件做集中的处理，从而保证程序的稳定性和健壮性
+
+### 6.2 捕获异常
+
+#### 6.2.1 简单的捕获异常语法
+
+1. **语法：**
+
+   ```python
+   try:
+   	尝试执行的代码
+   except:
+   	出现错误的处理
+   ```
+
+   - `try` 尝试，下方编写要尝试的代码，不确定是否能够正常执行的代码
+   - `except` 如果不是，下方编写尝试失败的代码
+
+2. **示例：**
+
+   ```python
+   try:
+       f = open("ABC.txt", "r", encoding="utf-8")
+   except:
+       print("出现异常了，因为文件不存在，所以改变open的模式")
+       f = open("ABC.txt", "w", encoding="utf-8")
+       f.close()
+   ```
+
+#### 6.2.2 错误类型的捕获
+
+- 在程序执行时，可能会遇到不同类型的异常，并且需要**针对不同类型的异常，做出不同的响应，这个时候，就需要捕获错误类型**
+
+1. **语法：**
+
+   ```python
+   try:
+   	# 尝试执行的代码
+   	pass
+   except 错误类型1:
+   	# 针对错误类型1，对应的代码处理
+   	pass
+   except (错误类型2, 错误类型3):
+   	# 针对错误类型2 和 3，对应的代码处理
+   	pass
+   except Exception as result:
+   	print("未知错误 %s " % result)
+   ```
+
+   > 当 `Python` **解释器抛出异常时，最后一行错误信息的第一个单词，就是错误类型**
+
+2. **示例：**
+
+   ```python
+   try:
+       # 1. 提示用户输入一个整数
+       num = int(input("输入一个整数："))
+   
+       # 2. 使用 `8` 除以用户输入的整数并且输出
+       res = 8 / num
+   
+       print(res)
+   except ZeroDivisionError:
+       print("除0错误")
+   except ValueError:
+       print("请输入正确的整数")
+   except Exception as result:
+   	print("未知错误 %s" % result)
+   ```
+
+   - 在开发时，要预判到所有可能出现的错误，还是有一定难度的
+   - 如果希望程序无论出现任何错误，都不会因为 `Python` 解释器抛出异常而被终止，可以再增加一个 `except Exception as result`
+   - `Exception` 是捕获的异常类型，这里是一个通用的异常类型，意味着它会捕获所有继承自 `Exception` 的异常。
+   - `as result` 表示将捕获到的异常对象赋值给变量 `result`，这样你就可以在 `except` 块中使用这个变量来访问异常的详细信息。
+
+#### 6.2.3 异常捕获完整语法
+
+在实际开发中，为了能够处理复杂的异常情况，实际的**异常语法如下**：
+
+> 使用 `pass` 可以让代码保持结构完整，即该段落什么都不做，未来会填写
+
+```python
+try:
+	# 尝试执行的代码
+	pass
+except 错误类型1:
+	# 针对错误类型1，对应的代码处理
+	pass
+except 错误类型2:
+	# 针对错误类型2，对应的代码处理
+	pass
+except (错误类型3, 错误类型4):
+	# 针对错误类型3 和 4，对应的d代码处理
+	pass
+except Exception as result:
+	# 打印错误信息
+	print(result)
+else:
+	# 没有异常才会执行的代码
+	pass
+finally:
+	# 无论是否有异常，都会执行的代码
+	print("无论是否有异常，都会执行的代码")
+```
+
+> - `else` 只有在没有异常时才会执行的代码
+> - `finally` 无论是否有异常，都会执行的代码
+
+### 6.3 异常的传递
+
+- 异常的传递 -- 当函数/方法执行出现异常，会将异常传递给函数/方法的**调用**一方
+- 而在主函数中调用的其他函数，只要出现异常，都会传递到主函数的异常捕获中
+- 这样就不需要在代码中，增加大量的异常捕获，能够保证代码的整洁
+
+```python
+def demo1():
+    return int(input("请输入整数："))
+
+def demo2():
+    return demo1()
+
+# 利用异常的传递性，在主程序捕获异常
+try:
+    print(demo2())
+except Exception as result:
+    print("未知错误 %s" % result)
+```
+
+### 6.4 抛出 raise 异常
+
+> 在开发中，还可以**根据应用程序特有的业务需求主动抛出异常**
+
+- 在 Python 中提供了一个 `Exception` 异常类
+- 在开发时，如果满足特定业务需求时，希望抛出异常，可以：
+  1. **创建一个 `Exception` 的对象**
+  2. **使用 `raise` 关键字抛出异常对象**
+
+```python
+def input_password():
+
+    # 1.提示用户输入密码
+    pwd = input("请输入密码：")
+    # 2.判断密码长度 >= 8，返回用户输入的密码
+    if len(pwd) >= 8:
+        return pwd
+    # 3.如果 < 8，主动抛出异常
+    print("主动抛出异常")
+    # 1>创建异常对象 - 可以使用错误信息字符串作为参数
+    ex = Exception("密码长度不够")
+    # 2>主动抛出异常
+    raise ex
+
+# 提示用户输入密码
+try:
+    print(input_password())
+except Exception as result:
+    print(result)
+```
+
+## 7. Pyecharts实例分析
+
+### 7.1 JSON数据
+
+#### 7.1.1 JSON数据概念
+
+JSON数据格式：轻量级的数据交互格式，可以按照JSON指定的格式去**组织和封装数据**
+
+JSON本质上是一个带有**特定格式的字符串**
+
+主要功能：`json`就是一种在各个编程语言中流通的数据格式，负责不同编程语言中的**数据传递和交互**
+
+JSON就是把字典转变为字符串，或者说是一个元素都是字典的列表转变为字符串
+
+如{"name":"admin,"age":18}
+
+#### 7.1.2 JSON数据转换
+
+```python
+# 导入json模块
+import json
+
+# 准备列表，列表内每一个元素都是字典，将其转换为JSON
+data = [{"name": "卢", "age": 11}, {"name": "zi", "age": 18}, {"name": "jun", "age": 22}]
+
+# 通过json.dumps(data)方法把python数据转化为json数据(ensure_ascii=False即可输出中文字符)
+json_str = json.dumps(data, ensure_ascii=False)
+print(f"类型是{type(json_str)},内容是{json_str}")
+
+# 通过json.loads(data)方法把json数据转化为python数据(字典)
+json.loads(json_str)
+print(f"类型是{type(json.loads(json_str))},内容是{json.loads(json_str)}")
+```
+
+### 7.2 Pyecharts基础使用
+
+#### 7.2.1 Pyecharts概念
+
+Pyecharts 是一个用于生成图表的 Python 库，基于 ECharts。它提供了简单易用的接口，可以快速创建各种交互式图表，如折线图、柱状图、饼图等
+
+#### 7.2.2 基础实例
+
+1. 实例：绘制折线图
+
+   ```python
+   from pyecharts.charts import Line
+   from pyecharts.options import TitleOpts, LegendOpts, ToolboxOpts, VisualMapOpts
+   
+   # 创建一个折线图对象
+   line = Line()
+   # 对该对象调用其方法，给折线图添加x轴数据
+   line.add_xaxis(["中国", "美国", "英国"])
+   # 对该对象调用其方法，给折线图添加y轴数据
+   line.add_yaxis("GDP", [30, 20, 10])
+   
+   # 全局配置(针对通用配置，如标题，工具箱)采用set_global_opts方法
+   line.set_global_opts(
+       title_opts=TitleOpts(title="GDP展示", pos_left="center", pos_bottom="1%"),
+       legend_opts=LegendOpts(is_show=True),
+       toolbox_opts=ToolboxOpts(is_show=True),
+       visualmap_opts=VisualMapOpts(is_show=True),
+   )
+   # 通过render方法，将代码生成为图像(html文件)
+   line.render()
+   ```
+
+2. 实例二：绘制柱状图
+
+   ```python
+   """
+   演示带有时间线的柱状图开发
+   """
+   # 添加Bar(柱状图)、Timeline(时间线)功能包
+   from pyecharts.charts import Bar, Timeline
+   # 添加LabelOpts(图例)功能包
+   from pyecharts.options import LabelOpts
+   # 添加ThemeType(主题设置)功能包
+   from pyecharts.globals import ThemeType
+   
+   bar1 = Bar()
+   bar1.add_xaxis(["中国", "美国", "英国"])
+   # label_opts=LabelOpts(position="right"):修改图例数据位置
+   bar1.add_yaxis("GDP", [30, 30, 20], label_opts=LabelOpts(position="right"))
+   # 反转x和y轴
+   bar1.reversal_axis()
+   
+   bar2 = Bar()
+   bar2.add_xaxis(["中国", "美国", "英国"])
+   # label_opts=LabelOpts(position="right"):修改图例数据位置
+   bar2.add_yaxis("GDP", [50, 50, 50], label_opts=LabelOpts(position="right"))
+   # 反转x和y轴
+   bar2.reversal_axis()
+   
+   bar3 = Bar()
+   bar3.add_xaxis(["中国", "美国", "英国"])
+   # label_opts=LabelOpts(position="right"):修改图例数据位置
+   bar3.add_yaxis("GDP", [70, 60, 60], label_opts=LabelOpts(position="right"))
+   # 反转x和y轴
+   bar3.reversal_axis()
+   
+   # 构建时间线对象,传入字典("theme": ThemeType.LIGHT-主题设置)
+   timeline = Timeline({"theme": ThemeType.LIGHT})
+   # 在时间线内添加柱状图对象
+   timeline.add(bar1, "点1")
+   timeline.add(bar2, "点2")
+   timeline.add(bar3, "点3")
+   # 绘图是用时间线对象绘图，而不是bar对象了
+   """
+   自动播放设置
+   play_interval:自动播放的时间间隔，单位毫秒
+   is_timeline_show:是否在播放的时候显示时间线
+   is_auto_play:是否自动播放
+   is_loop_play:是否循环自动播放
+   """
+   timeline.add_schema(
+       play_interval=1000,
+       is_timeline_show=True,
+       is_auto_play=True,
+       is_loop_play=True
+   )
+   
+   # 绘图是用时间线对象绘图，而不是bar对象了
+   timeline.render("基础时间线柱状图.html")
+   
+   ```
+
+## 8. 类和对象
+
+### 8.1 面向对象(OOP)基本概念
+
+> 面向对象编程 -- `Object Oriented Propragramming` 简称 `OOP`
+>
+
+**面向过程：**
+
+1. 把完成某一个需求时 `所有步骤` `从头到尾` 逐步实现
+2. 根据开发需求，将某些功能独立地代码封装成一个又一个函数
+3. 最后完成地代码，就是顺序地调用不同的函数
+
+![2](./JUN‘s_Python_learning.assets/2.png)
+
+**面向对象：**
+
+> 相比较函数，**面向对象是更大的封装，根据职责在一个对象中封装多个方法**
+
+1. 在完成某一个需求前，首先确定职责--要做的事情(方法)
+2. 根据职责确定不同的需求变化，**是专门应对复杂项目开发，提供的固定套路**
+3. 最后完成的代码，就是顺序地让不同地对象调用不同的方法
+
+> 可以理解为设计表格-打印生产表格-填写表格
+
+### 8.2 类和对象的概念
+
+类和对象是面向对象编程的两个核心概念
+
+#### 8.2.1 类
+
+- 类是对一群**具有相同特征或者行为的事物的一个统称**，是抽象的，**不能直接使用**
+  - **特征**被称为**属性**
+  - **行为**被称为**方法**
+- 类就相当于制作填写表格的模板，**是一个模板，是负责创建对象的**
+
+#### 8.2.2 对象
+
+- 对象是由类创建出来的一个具体存在，可以直接使用
+- 由哪一个类创建出来的对象，就拥有在哪一个类中定义的：
+  - 属性
+  - 方法
+- 对象就相当于根据自己信息填写表格上的内容
+
+>在程序开发中，应该现有类，再有对象
+
+#### 8.3 类和对象的关系
+
+- 类是模板，对象是根据类这个模板创建出来的，应该**先有类，再有对象**
+- 类只有一个，而对象可以有很多个
+  - 不同的对象之间属性可能会各不相同
+- 类中定义了什么属性和方法，对象中就有什么属性和方法，不可能多，也不可能少
+
+> 在程序中使用对象组织数据就是：**设计类(class)-创建对象-对象属性赋值**
+>
+> 可理解为三个步骤：**设计表格-打印生产表格-填写表格**
+
+#### 8.4 类的设计
+
+在使用面向对象开发前，应该首先分析需求，确定一下程序中需要包含哪些类
+
+![3](./JUN‘s_Python_learning.assets/3.png)
+
+在程序开发中，要设计一个类，通常需要满足以下三个要素：
+
+1. **类名** 这类事物的名字，满足大驼峰命名法
+2. **属性** 这类食物具有什么样的特征
+3. **方法** 这类食物具有什么样的行为
+
+### 8.3 类和对象基础语法
+
+#### 8.3.1 `dir`内置函数
+
+在 Python 中可以使用以下两个方法查看对象的属性和方法：
+
+1. 在**标识符/数据**后输入一个 `.` ，然后按下 `Tab` 键，`iPython` 会提示改对象能够调用的**方法列表**
+2. 使用内置函数 `dir` 传入标识符/数据，可以查看对象内的**所有属性及方法**
+
+> 提示：`__方法名__` 格式的方法是 `Python` 提供的内置方法/属性
+
+| 序号 | 方法名     | 类型 | 作用                                       |
+| ---- | ---------- | ---- | ------------------------------------------ |
+| 01   | `__new__`  | 方法 | **创建对象**时，会被自动调用               |
+| 02   | `__init__` | 方法 | **对象被初始化**时，会被自动调用           |
+| 03   | `__del__`  | 方法 | **对象被从内存中销毁**前，会被自动调用     |
+| 04   | `__str__`  | 方法 | 返回**对象的描述信息**，print 函数输出使用 |
+
+1. **构造方法**
+
+   `__init__()`,称之为构造方法
+
+   在创建类对象(构造类)的时候，会自动执行,如下`print`自动执行
+
+   在创建类对象(构造类)的时候，将传入参数自动传递给`__init__()`方法使用
+
+   ```python
+   class Student:
+       # 可以省略，因为在下面方法里面已经完成了对成员变量的定义了
+       name = None
+       age = None
+       tel = None
+   
+       def __init__(self, name, age, tel):
+           self.name = name
+           self.age = age
+           self.tel = tel
+           print("student类创建了一个类对象")
+   
+   
+   std = Student("JUN", 18, "555555")
+   print(std.name)
+   print(std.age)
+   print(std.tel)
+   ```
+
+2. 字符串方法
+
+   `__str__`:字符串方法，控制类转换为字符串的方法
+
+   ```python
+   class Student:
+       def __init__(self, name, age):
+           self.name = name
+           self.age = age
+   
+       # __str__魔术方法
+       def __str__(self):
+           return f"Student:类对象name: {self.name}, age: {self.age}"
+   
+   
+   stu = Student("JUN", 18)
+   # 正常情况打印stu将得到类的内存地址，但使用__str__后将会按照规定的返回值进行输出
+   print(stu)
+   print(str(stu))
+   ```
+
+#### 8.3.2 定义简单的类和对象
+
+1. **类的定义和使用：**
+
+   `class` 类名称:     class是关键字
+
+   ​	类的属性      类的属性，即定义在类中的变量(成员变量)
+
+   ​	类的行为      类的行为，即定义在类中的函数(成员方法)
+
+   所有定义在类中的函数将其称之为方法
+
+2. **成员方法的定义语法：**
+
+   `def` 方法名(`self`, 形参1, 形参2)
+
+   ​	方法体
+
+   在成员方法定义的时候必须填写self关键字
+
+   用来表示类自身的意思
+
+   并且在方法内部，想要访问类的成员变量必须使用`self`
+
+   在调用具体方法时不需要理会`self`
+
+3. **创建类对象的语法：**
+
+   对象 = 类名称()
+
+4. **示例**：
+
+   > 面向对象编程思想：类是一种程序内的“设计图纸”，需要基于图纸生产实体(对象)，才能正常工作
+   >
+   > 面向对象编程就是设计类，基于类创建对象，由对象做具体的工作，即使用对象进行编程
+
+   ```python
+   # 设计一个闹钟类
+   class Clock:
+       # 成员属性
+       id = None
+       price = None
+       
+   	# 成员方法
+       def ring(self, id, price):
+           import winsound
+           self.id = id
+           self.price = price
+           winsound.Beep(2000, 3000)
+   
+   # 构建两个闹钟对象并让其工作
+   clock1 = Clock()
+   clock1.ring("id1", 100)
+   print(f"id是{clock1.id}价格{clock1.price}")
+   
+   clock2 = Clock()
+   clock1.ring("id2", 10)
+   print(f"id是{clock2.id}价格{clock2.price}")
    ```
 
    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
