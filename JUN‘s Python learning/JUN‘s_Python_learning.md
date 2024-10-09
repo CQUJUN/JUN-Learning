@@ -2006,6 +2006,45 @@ Pyecharts 是一个用于生成图表的 Python 库，基于 ECharts。它提供
      - 一个对象的 `__del__` 方法一旦被调用，**生命周期结束**
      - 在对象的生命周期内，可以访问对象属性，或者让对象调用方法
 
+4.  `__new__` 方法
+
+   - 使用 `类名()` 创建对象时，Python的解释器首先会调用 `__new__` 方法为对象**分配空间**
+   - `__new__` 是一个由 `object` 基类提供的**内置的静态方法**，主要作用有两个：
+     1) **在内存中为对象分配空间**
+     2) **返回对象的引用**
+   - Python 的解释器获得对象的引用后，将引用作为第一个参数，传递给 `__init__` 方法
+
+   - 重写 `__new__` 方法一定要 `return super().__new__(cls)`
+   - 否则 Python 的解释器**得不到**分配了空间的对象引用，就不会调用对象的初始化方法
+   - 注意：`__new__` 是一个静态方法，在调用时需要出动传递 `cls` 参数
+
+   ![12](./JUN‘s_Python_learning.assets/12.png)
+
+   ```python
+   class MusicPlayer:
+   
+       def __new__(cls, *args, **kwargs):
+           # 1.创建对象时，new方法会被自动调用
+           print("创建对象，分配空间")
+   
+           # 2.为对象分配空间
+           instance = super().__new__(cls)
+   
+           # 3.返回对象的引用
+           return instance
+   
+       def __init__(self) -> None:
+           print("播放器初始化")
+   
+   
+   # 创建播放器对象
+   player = MusicPlayer()
+   
+   print(player)
+   ```
+
+   
+
 #### 8.3.2 定义简单的类和对象
 
 1. **类的定义和使用：**
@@ -2278,13 +2317,253 @@ c.demo()
 
 > 提示：**开发时，应该尽量避免这种容易产生混淆的情况**！--如果父类之间存在同名的属性或者方法，应该尽量避免使用多继承
 
+#### 8.5.6 继承中的`object`
+
+`object` 是 `Python` 为所有对象提供的基类，提供有一些内置的属性和方法，可以使用 `dir` 函数查看
+
+![7](./JUN‘s_Python_learning.assets/7.png)
+
+为了保证编写的代码能够同时在 `Python 2.x` 和 `Python 3.x` 运行，今后在定义类时，如果没有父类，建议统一继承自 `object`
+
+```python
+class 类名(object):
+	pass
+```
+
+### 8.6 类型注解(`:  ->`)
+
+> 类型注解是 `Python 3.5` 引入的功能，用于为变量、函数参数和返回值指定数据类型
+>
+> 协助做代码提示，即备注，不会影响最终输出结果
+
+#### **8.6.1  变量注解**
+
+```python
+age: int = 30
+name: str = "Alice"
+```
+
+#### **8.6.2 函数注解**
+
+对形参进行类型注解，`def 函数方法名(形参1: 类型1, 形参2: 类型2)`
+
+```python
+def add(x: int, y: int):
+    return x + y
+```
+
+对函数返回值进行类型注解，`def 函数方法名(形参1: 类型1, 形参2: 类型2) ->返回值类型`
+
+```python
+def greet(name: str) -> str:
+    return f"Hello, {name}!"
+```
+
+#### **8.6.3 集合类型注解**
+
+使用 `List`、`Tuple`、`Dict` 等类型来注解集合类型：
+
+```python
+from typing import List, Tuple, Dict
+
+def process_items(items: List[int]) -> None:
+    for item in items:
+        print(item)
+
+def get_person() -> Tuple[str, int]:
+    return "Bob", 25
+
+def get_scores() -> Dict[str, int]:
+    return {"Alice": 90, "Bob": 85}
+```
+
+#### 8.6.4 类类型注解
+
+```python
+class Animal:
+    def speak(self):
+        pass
+
+def make_noise(animal: Animal):
+    """制造点噪音，需要传入Animal对象"""
+    animal.speak()
+```
+
+在这个例子中，`animal` 是一个类型参数，表示任何继承自 `Animal` 的类
+
+#### 8.6.4 联合类型注解
+
+ `Union` 表示可以是多种类型之一
+
+使用`Union[类型, 类型]`定义**联合类型注释**(用于混合类型)
+
+```python
+# 使用Union类型，必须先导包
+from typing import Union
+
+# 可传入int或者str，再或者两个都传
+my_list: list[Union[int, str]] = [1, 2, "itheima", "itcast"]
+
+# 注释意思是输入带整数和字符串的列表
+def func(data: Union[int, str]) -> Union[int, str]:
+    pass
+```
+
+### 8.7 多态
+
+#### 8.7.1 多态的基本概念
+
+多态：不同的子类对象调用相同的父类方法，产生不同的执行结果
+
+- 多态可以增加代码的灵活度
+- **以继承和重写父类方法为前提**
+- 是调用方法的技巧，不会影响到类的内部设计
+
+> 多态常作用在继承关系上，即以父类做定义声明，以子类做实际工作，用以获得同一行为不同状态
+
+![8](./JUN‘s_Python_learning.assets/8.png)
+
+#### 8.7.2 多态案例
+
+**需求**：
+
+1. 在 `Dog` 类中封装方法 `game`
+   - 普通狗只是简单的玩耍
+2. 定义 `XiaoTianQuan` 继承自 `Dog` ，并且重写 `game` 方法
+   - 哮天犬需要在天上玩耍
+3. 定义 `Person` 类，并且封装一个和狗玩的方法
+   - 在方法内部，直接让狗对象调用 `game` 方法
+
+![9](./JUN‘s_Python_learning.assets/9.png)
+
+**示例：**
+
+```python
+class Dog(object):
+
+    def __init__(self, name) -> None:
+        self.name = name
+
+    def game(self):
+        print("%s 蹦蹦跳跳地玩耍..." % self.name)
 
 
+class XiaoTianDog(Dog):
+
+    def game(self):
+        print("%s 飞到天上玩耍..." % self.name)
 
 
+class Person(object):
+
+    def __init__(self, name) -> None:
+        self.name = name
+
+    def game_with_dog(self, dog: Dog):
+        print("%s 和 %s 快乐地玩耍..." % (self.name, dog.name))
+        # 让狗玩耍
+        dog.game()
 
 
+# 1.创建 狗 对象
+# wangcai = Dog("旺财")
+wangcai = XiaoTianDog("飞天旺财")
 
+# 2.创建一个 小明 对象
+xiaoming = Person("小明")
+
+# 3.让小明调用和狗玩的方法
+xiaoming.game_with_dog(wangcai)
+```
+
+总结：
+
+- `Person` 类中只需要让狗对象调用 `game` 方法，而不关心具体是什么狗
+  - `game` 方法是在 `Dog` 父类中定义的
+- 在程序执行时，**传入不同的狗对象实参**，就会**产生不同**的执行效果
+- 可以理解为以父类 `Dog` 做定义声明`dog: Dog`，以子类`XiaoTianDog`做实际工作
+
+> 多态中其实最关键的部分就是以父类 `Dog` 做定义声明`dog: Dog`
+
+#### 8.7.3 抽象类(接口)
+
+**抽象类(接口)**：含有抽象方法的类称之为抽象类
+
+**抽象方法**：方法体是**空实现的**(`pass`)称之为**抽象方法**
+
+含义是父类用来确定有哪些方法，具体方法实现由子类自行决定
+
+抽象类好比定义一个**标准**，包含一些抽象的方法，要求**子类必须实现**，但如何实现由**子类来决定**，可以理解为**父类顶层设计**
+
+> 配合多态完成抽象的父类设计(设计标准)和具体的子类实现(实现标准)
+
+```python
+class AC:
+    def cool_wind(self):
+        """制冷"""
+        pass
+
+    def hot_wind(self):
+        """制热"""
+        pass
+
+class Midea_AC(AC):
+    def cool_wind(self):
+        print("美的空调制冷")
+
+    def hot_wind(self):
+        print("美的空调制热")
+
+class GREE_AC(AC):
+    def cool_wind(self):
+        print("格力空调制冷")
+
+    def hot_wind(self):
+        print("格力空调制热")
+
+def make_cool(ac: AC):
+    ac.cool_wind()
+
+midea_ac = Midea_AC()
+gree_ac = GREE_AC()
+make_cool(midea_ac)
+make_cool(gree_ac)
+```
+
+### 8.8 类属性总结
+
+#### 8.8.1 实例化
+
+1. 使用面向对象开发，第1步是设计类
+2. 使用 类名() 创建对象，创建对象的动作有两步
+   1) 在内存中为对象**分配空间**
+   2) 调用初始化方法 `__init__` 为**对象初始化**
+3. 对象创建后，内存中就有了一个对象的实实在在的存在 -- 实例
+
+![10](./JUN‘s_Python_learning.assets/10.png)
+
+通常也会把：
+
+1. 创建出来的对象叫作**类的实例**
+2. 创建对象的当作叫作**实例化**
+3. 对象的属性叫作**实例属性**
+4. 对象调用的方法叫作**实例方法**
+
+在程序执行时：
+
+1. 对象各自拥有自己的实例属性
+2. 调用对象方法，可以通过 `self.`
+   - 访问自己的属性
+   - 访问自己的方法
+
+#### 8.8.2 类是一个特殊的对象
+
+> `Python` 中**一切皆对象**：
+>
+>  - `class AAA:` 定义的类属于类对象
+>    - `obj1 = AAA()` 属于实例对象
+
+![11](./JUN‘s_Python_learning.assets/11.png)
 
 
 
