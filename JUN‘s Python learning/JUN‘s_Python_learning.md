@@ -54,13 +54,15 @@ if __name__ == '__main__':
 
 ### 2.2 注释
 
-1.  **单行注释**
+1. **单行注释**
 
    ```python
    # 描述信息
    ```
 
    - 以`#`开头，`#`右边的所有东西都被当作说明文字，而不是真正要执行的程序，只起到辅助说明作用
+
+   > Ctrl + /  注释
 
 2. **多行注释**
 
@@ -89,7 +91,7 @@ if __name__ == '__main__':
 
    > 取消换行：end=''，tab键：\t
 
-3. **f-string：**字符串格式化快速写法（注意不限数据类型，即输出为字符串）`f:format`
+3. **`f-string`：**字符串格式化快速写法（注意不限数据类型，即输出为字符串）`f:format`
 
    使用`f`前缀，然后在字符串中使用大括号`{}`包围变量或表达式
 
@@ -100,6 +102,17 @@ if __name__ == '__main__':
    > 变量和表达式的计算是在运行时进行的。
 
    > 如果需要在字符串中插入大括号本身，可以使用双大括号`{{`和`}}`
+
+   **`"{}.txt".format(file_name)`**：
+
+   - `"{}.txt"` 是一个带有占位符 `{}` 的字符串，`{}` 是用于插入值的位置。
+   - `format(file_name)` 会将 `file_name` 的值插入到 `{}` 处，生成新的字符串。
+
+   ```python
+   file_name = "image_001"
+   formatted_string = "{}.txt".format(file_name)
+   print(formatted_string)  # 输出 'image_001.txt'
+   ```
 
 4. 字符串格式化，`%d %s %f %%`：占位，s：表示把变量变成字符串放入占位的地方
 
@@ -331,6 +344,18 @@ raddom.randint(a, b)
 | `\n`     | 换行       |
 
 > **制表符** 的功能是在不适用表格的情况下在 **垂直方向** 按列对齐文本
+
+### 2.12 查看变量、类等如何使用
+
+在`PyCharm`中，按住**Ctrl**键，把鼠标移到类或者变量上
+
+如图出现蓝色下划线
+
+![13](./JUN‘s_Python_learning.assets/13.png)
+
+即可查看
+
+![14](./JUN‘s_Python_learning.assets/14.png)
 
 ## 3. 函数
 
@@ -1496,6 +1521,7 @@ print(f"字典对象的排序结果：{sorted(my_dict)}")
        print(f"每一行数据是{line}")
    # 文件的关闭(不关闭导致该文件一直被Python占用)
    f.close()
+   
    # with open as f语法操作文件(打开文件执行完函数体后会自动关闭该文件)
    with open('test.txt', 'r', encoding='utf-8') as f:
        for line in f:
