@@ -832,13 +832,475 @@ tensorboard --logdir=logs  # logdir=事件文件所在文件夹名
 tensorboard --logdir=logs --port=6007
 ```
 
+##### 7. 清除上一个事件
 
+每向 writer 中写入新的事件，也记录了上一个事件
+
+若不清除，图像过程中会发生拟合
+
+![15](./JUN‘s_PyTorch_learning.assets/15.png)
+
+所以需要清除上一个写入的事件
+
+把**logs**文件夹下的**所有文件删掉**，**程序删掉，重新开始**
+
+或：重新写一个子文件，即创建新的 `SummaryWriter("新文件夹")`
+
+> 删掉logs下的文件，重新运行代码，在 Terminal 里按 Ctrl+C ，再输入命令：
+>
+> tensorboard --logdir=logs --port=6007
 
 #### 2.4.4 add_image() 的使用
 
+`add_image()`： 
 
+是 PyTorch 的 `SummaryWriter` 类中的方法，允许将图像数据记录到 TensorBoard 中
 
+用于可视化模型的输入、输出或中间结果。这在处理图像数据的任务（如计算机视觉）中特别有用。
 
+##### 1. 函数内容
+
+```python
+def add_image(
+    self, 
+    tag, 
+    img_tensor, 
+    global_step=None, 
+    walltime=None, 
+    dataformats='CHW'):
+```
+
+**参数说明**
+
+- **tag**：对应图像的title
+
+- **img_tensor：图像的数据类型，只能是torch.Tensor、numpy.array、string/blobname**
+
+- **global_step**：
+
+  训练步骤，`int` 类型，通常用于跟踪当前是哪个 epoch 或 batch。
+
+  如果没有指定，`global_step` 的默认值是 **`None`**
+
+- **walltime**：`float` 类型，可选，表示时间戳，用来指定记录的时间，一般情况下不用特别指定。
+
+- **dataformats**：`str` 类型，指定图像数据的格式。常见的格式有：
+
+  - `CHW`（默认）：表示图像张量的形状是 `(channels, height, width)`。
+  - `HWC`：表示图像张量的形状是 `(height, width, channels)`，常用于 OpenCV 或 PIL 读取的图像。
+  - `HW`：表示灰度图像的形状是 `(height, width)`。
+
+![16](./JUN‘s_PyTorch_learning.assets/16.png)
+
+![17](./JUN‘s_PyTorch_learning.assets/17.png)
+
+由下例子得知对于`OpenCV` 或 `PIL` 读取的图像所传入的`img_tensor`参数需要为`numpy`类型
+
+![18](./JUN‘s_PyTorch_learning.assets/18.png)
+
+##### 2. `numpy`类型
+
+`numpy` 是一个广泛使用的 Python 库，用于进行高效的数值计算和数据处理。
+
+它提供了支持多维数组和矩阵运算的功能，以及许多数学函数，用于对这些数组进行操作
+
+> `numpy` 的核心数据结构是 `ndarray`，即 **n 维数组**。它支持多维数组操作，能够高效存储和处理大量数据。
+
+- 使用 `numpy` 提供的函数可以方便地创建数组
+- `numpy` 支持各种数组操作，包括索引、切片、拼接、形状改变等
+- `numpy` 提供了大量的数学函数，如加减乘除、三角函数、统计函数等
+
+示例：
+
+```python
+import numpy as np
+
+# 创建数组
+array = np.array([[1, 2, 3], [4, 5, 6]])
+
+# 访问元素
+print("元素 [1, 2]:", array[1, 2])  # 访问第二行第三列的元素
+
+# 数组运算
+array_squared = array ** 2  # 每个元素平方
+print("平方后的数组:\n", array_squared)
+
+# 计算和
+total_sum = np.sum(array)
+print("数组元素的总和:", total_sum)
+
+# 计算均值
+mean_value = np.mean(array)
+print("数组的均值:", mean_value)
+```
+
+##### 3. 对图片进行转换
+
+利用`numpy.array()`，对`PIL`图片进行转换
+
+在Python控制台，把**`PIL`类型的img变量**转换为**`numpy`类型（`add_image()` 函数所需要的图像的数据类型）**，重新赋值给`img_array`：
+
+```python
+import numpy as np
+from PIL import Image
+
+image_path = "Data/hymenoptera_data/train/ants_image/0013035.jpg"
+img = Image.open(image_path)
+
+img_array=np.array(img)
+print(type(img_array))   # numpy.ndarray
+```
+
+##### 4. `shape` 属性
+
+`shape` 是一个属性，用于表示数组的维度和每个维度的大小。它返回一个元组，包含每个维度的大小，帮助用户了解数组的结构
+
+**从`PIL`到`numpy`，需要在`add_image()`中指定`shape`中每一个数字/维表示的含义**
+
+即修改`dataformats`的值为`dataformats='HWC'`
+
+##### 5. **蚂蚁为例**
+
+```python
+from torch.utils.tensorboard import SummaryWriter   #导入SummaryWriter类
+import numpy as np
+from PIL import Image
+ 
+#创建实例
+writer=SummaryWriter("logs")   #把对应的事件文件存储到logs文件夹下
+image_path="Data/hymenoptera_data/train/ants_image/0013035.jpg"
+img_PIL=Image.open(image_path)
+img_array=np.array(img_PIL)
+print(type(img_array))
+print(img_array.shape)   #(512,768,3)  即(H,W,C)(高度，宽度，通道)
+ 
+writer.add_image("test",img_array,1, dataformats='HWC')  # 第1步
+ 
+writer.close()
+```
+
+![19](./JUN‘s_PyTorch_learning.assets/19.png)
+
+##### 6. **蜜蜂为例**
+
+```python
+from torch.utils.tensorboard import SummaryWriter   #导入SummaryWriter类
+import numpy as np
+from PIL import Image
+ 
+#创建实例
+writer=SummaryWriter("logs")   #把对应的事件文件存储到logs文件夹下
+image_path="Data/hymenoptera_data/train/bees_image/16838648_415acd9e3f.jpg"
+img_PIL=Image.open(image_path)
+img_array=np.array(img_PIL)
+print(type(img_array))
+print(img_array.shape)   #(512,768,3)  即(H,W,C)(高度，宽度，通道)
+ 
+writer.add_image("test",img_array,2, dataformats='HWC')   # 第2步
+ 
+writer.close()
+```
+
+由于`tag`没有变，所以第二个蜜蜂例子也在同一图像当中，并且将`global_step`设置为2，可将蜜蜂图片设置到第二次训练步骤当中，如图：
+
+![20](./JUN‘s_PyTorch_learning.assets/20.png)
+
+> 在一个title下，**通过滑块显示每一步的图形**，可以直观地观察训练中给model提供了哪些数据，或者想对model进行测试时，可以看到每个阶段的输出结果
+>
+> 如果想要**单独显示**，重命名一下title即可，即 writer.add_image() 的第一个字符串类型的参数
+
+## 3. transforms的使用
+
+> `transforms` 是 `torchvision` 库中的一个模块，主要用于对图像数据进行各种预处理和增强操作
+
+### 3.1 transforms的基本语法
+
+```python
+from torchvision import transforms
+```
+
+#### 3.1.1 常用的 Transforms类
+
+1. **基本转换**：
+   - `ToTensor`：把一个PIL的Image或者numpy数据类型的图片转换成 tensor 的数据类型，将图像转换为 PyTorch 张量，并将像素值缩放到 [0, 1] 范围
+   - `ToPILImage`：把一个图片转换成PIL Image
+   - `Normalize`：对图像进行归一化，通常使用预定义的均值和标准差。
+   - `Resize`：调整图像的大小。
+   - `CenterCrop`：中心裁剪
+2. **数据增强**：
+   - `RandomHorizontalFlip`：以一定概率水平翻转图像。
+   - `RandomRotation`：随机旋转图像。
+   - `ColorJitter`：随机调整图像的亮度、对比度、饱和度和色调。
+3. **组合变换**：
+   - `Compose`：将多个变换组合在一起，以便一次性应用。
+
+> 拿一些**特定格式**的图片，经过Transforms工具后，就会输出我们想要的图片变换的结果
+
+### 3.2 transforms 使用过程
+
+从transforms中选择一个class，对它进行创建，对创建的对象传入图片，即可返回出结果 
+
+如`ToTensor`将一个 `PIL Image` 或 `numpy.ndarray` 转换为 `tensor`的数据类型 
+
+![21](./JUN‘s_PyTorch_learning.assets/21.png)
+
+```python
+from PIL import Image
+from torchvision import transforms
+
+img_path="Data/hymenoptera_data/train/ants_image/0013035.jpg" 
+img = Image.open(img_path)   #Image是Python中内置的图片的库
+print(img)  # PIL类型
+
+# 1、Transforms该如何使用
+tensor_trans = transforms.ToTensor()  #从工具箱transforms里取出ToTensor类，返回tensor_trans对象
+tensor_img=tensor_trans(img)   #创建出tensor_trans后，传入其需要的参数，即可返回结果
+print(tensor_img)
+```
+
+### 3.3 Tensor 数据类型
+
+- `Tensor` 数据类型包装了反向神经网络所需要的一些理论基础的参数，如：`_backward_hooks`、`_grad`等（先转换成`Tensor`数据类型，再训练）
+- Tensors 支持在 GPU 上进行计算，极大提高了运算速度。这对于深度学习模型的训练和推理至关重要。
+
+> 几乎所有现代深度学习框架（如 PyTorch、TensorFlow、JAX）都使用 Tensors 作为**基本数据类型**
+>
+> 可以理解为`Tensors`包装了神经网络所需要的一些参数
+
+### 3.4  读取图片的方式
+
+图片有不同的格式，打开方式也不同
+
+| **图片格式** | **打开方式**                             |
+| ------------ | ---------------------------------------- |
+| PIL          | Image.open()  ——Python自带的图片打开方式 |
+| tensor       | ToTensor()                               |
+| narrays      | cv.imread()  ——Opencv                    |
+
+#### **3.4.1 PIL Image**
+
+```python
+from PIL import Image
+
+img_path = "xxx"
+img = Image.open(img_path)
+
+img.show()
+```
+
+#### **3.4.2 numpy.ndarray**
+
+通过opencv
+
+```python
+import cv2
+cv_img=cv2.imread(img_path)
+```
+
+#### 3.4.3 使用torch.Tensor 类型
+
+> **img_tensor：图像的数据类型，只能是torch.Tensor、numpy.array、string/blobname**
+
+除了上一章使用`numpy.array`类型之外，还可使用`torch.Tensor`类型
+
+把 `PIL Image` 或 `numpy.ndarray` 类型转换为 `tensor` 类型（`TensorBoard` 必须是 `tensor` 的数据类型）
+
+```python
+from PIL import Image
+from torch.utils.tensorboard import SummaryWriter
+from torchvision import transforms
+ 
+img_path="Data/hymenoptera_data/train/ants_image/0013035.jpg"
+img = Image.open(img_path)   #Image是Python中内置的图片的库
+print(img)					# 可以看到类型是PIL
+writer = SummaryWriter("logs")
+
+# Transforms使用
+tensor_trans = transforms.ToTensor()  #从工具箱transforms里取出ToTensor类，返回tensor_trans对象
+tensor_img = tensor_trans(img)   #创建出tensor_trans后，传入其需要的参数，即可返回结果
+#print(tensor_img)
+
+writer.add_image("Tensor_img",tensor_img)  # .add_image(tag, img_tensor, global_step)
+# tag即名称
+# img_tensor的类型为torch.Tensor/numpy.array/string/blobname
+# global_step为int类型
+
+writer.close()
+```
+
+### 3.5 常见的Transforms的使用
+
+#### 3.5.1 Python中 `__call__` 用法
+
+内置函数 `__call__` ，**不用.的方式调用方法，可以直接拿对象名，加上需要的参数，即可调用方法**
+
+> 按 Ctrl+p，会提示括号里面需要什么参数
+
+```python
+class Person:
+
+    def __call__(self, name):   #下划线__表示为内置函数
+        print("__call__"+"Hello "+name)
+
+    def hello(self,name):
+        print("hello"+name)
+
+person = Person()
+person("zhangsan")  # 此处调用到了__call__
+person.hello("lisi")
+```
+
+输出结果如下：
+
+```markdown
+__call__Hello zhangsan
+hellolisi
+```
+
+#### 3.5.2 ToPILImage 的使用
+
+把 `tensor` 数据类型或 `ndarray` 类型转换成 `PIL Image`
+
+#### 3.5.3 Normalize 的使用
+
+用**平均值/标准差归一化** `tensor` 类型的 `image`（输入）
+
+> 标准化通常是深度学习中的重要步骤
+>
+> 目的是将输入数据的均值调整为 0，方差调整为 1，从而加速收敛和提高模型性能
+
+`Normalize` 接受三个主要参数：
+
+1. **mean**：一个包含每个通道**均值**的列表或元组。
+2. **std**：一个包含每个通道**标准差**的列表或元组。
+3. **inplace**：可选，布尔值，指示是否在**原地进行标准化**（默认为 `False`）。
+
+图片RGB三个信道，将每个信道中的输入进行**归一化**
+
+> `output[channel] = (input[channel] - mean[channel]) / std[channel]`
+
+由上式可得，为了使得每个信道输入**归一化**，需设置 `mean` 和 `std` 都为0.5，则 `output= 2*input -1`
+
+如果 `input` 图片像素值为**0~1**范围内，那么结果就是 **-1~1**之间
+
+```python
+from PIL import Image
+from torch.utils.tensorboard import SummaryWriter
+from torchvision import transforms
+
+writer = SummaryWriter("logs")
+img = Image.open("Data/hymenoptera_data/train/ants_image/0013035.jpg")
+print(img)  # 可以看到类型是PIL
+
+# ToTensor的使用
+trans_totensor = transforms.ToTensor()  # 将类型转换为tensor
+img_tensor = trans_totensor(img)  # img变为tensor类型后，就可以放入TensorBoard当中
+
+# Normalize的使用
+print(img_tensor[0][0][0])  # 第0层第0行第0列
+
+# mean,std，因为图片是RGB三信道，故传入三个数
+trans_norm = transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+
+img_norm = trans_norm(img_tensor)  # 输入的类型要是tensor
+print(img_norm[0][0][0])
+writer.add_image("Normalize", img_norm, 1)
+writer.close()
+
+```
+
+**结果如图：**
+
+![23](./JUN‘s_PyTorch_learning.assets/23.png)
+
+#### 3.5.4 Resize的使用
+
+**输入：**`PIL Image`
+
+用于**调整图像的大小**
+
+`Resize` 接受以下参数：
+
+1. **size**：一个整数或一个元组。**若为整数**，图像的**较短边**将被调整为该值，保持图像的纵横比；若为元组，指定图像的**目标宽度和高度**。
+2. **interpolation**：插值方法，可选，默认是 `PIL.Image.BILINEAR`。可选的插值方法有 `PIL.Image.NEAREST`、`PIL.Image.BOX`、`PIL.Image.BILINEAR`、`PIL.Image.HAMMING`、`PIL.Image.BICUBIC` 和 `PIL.Image.LANCZOS`。
+
+- **一个整数：**不改变高和宽的比例，只单纯改变最小边和最长边之间的大小关系。之前图里最小的边将会匹配这个数（等比缩放）
+- **返回值还是 `PIL Image`**`img：PIL --> resize --> img_resize：PIL`
+
+```python
+from PIL import Image
+from torch.utils.tensorboard import SummaryWriter
+from torchvision import transforms
+
+writer = SummaryWriter("logs")
+img = Image.open("Data/hymenoptera_data/train/ants_image/0013035.jpg")
+print(img.size)  # 输入是PIL.Image
+
+# ToTensor的使用
+trans_totensor = transforms.ToTensor()  # 将类型转换为tensor
+#Resize的使用
+trans_resize = transforms.Resize((512,512))
+
+#img：PIL --> resize --> img_resize：PIL
+img_resize = trans_resize(img)  #输出还是PIL Image
+
+#img_resize：PIL --> totensor --> img_resize：tensor（同名，覆盖）
+img_resize = trans_totensor(img_resize)
+
+writer.add_image("Resize",img_resize,0)
+print(img_resize)
+writer.close()
+```
+
+**结果如图：**
+
+![22](./JUN‘s_PyTorch_learning.assets/22.png)
+
+#### 3.5.5 Compose 的使用
+
+用于将多个**图像变换组合在一起**，以便在数据预处理过程中**一次性应用**，对于构建数据处理流水线非常方便
+
+```python
+Example:图片首先要经过中心裁剪，再转换成Tensor数据类型
+        >>> transforms.Compose([
+        >>>     transforms.CenterCrop(10),
+        >>>     transforms.PILToTensor(),
+        >>>     transforms.ConvertImageDtype(torch.float),
+        >>> ])
+```
+
+- `Compose` 的参数接受一个**变换列表**，将这些**变换依次应用于输入数据**。常见的组合包括调整大小、随机翻转、标准化等。
+
+- `Compose`中，数据需要是`transforms`类型，所以得到`Compose([transforms参数1，transforms参数2，...])`
+
+- 将输出类型从**PIL**变为**tensor**类型，第二种方法`PIL --> resize --> PIL --> totensor --> tensor`
+
+- compose()就是把两个参数功能整合，第一个参数是改变图像大小，第二个参数是转换类型，**前者的输出类型与后者的输入类型必须匹配**
+
+  ```python
+  from PIL import Image
+  from torch.utils.tensorboard import SummaryWriter
+  from torchvision import transforms
+  
+  writer = SummaryWriter("logs")
+  img = Image.open("Data/hymenoptera_data/train/ants_image/0013035.jpg")
+  print(img.size)  # 输入是PIL.Image
+  
+  # ToTensor的使用
+  trans_totensor = transforms.ToTensor()  # 将类型转换为tensor
+  # Compose的使用（将输出类型从PIL变为tensor类型，第二种方法）
+  trans_resize_2 = transforms.Resize(512)  # 将图片短边缩放至512，长宽比保持不变
+  
+  # PIL --> resize --> PIL --> totensor --> tensor
+  # compose()就是把两个参数功能整合，第一个参数是改变图像大小，第二个参数是转换类型，前者的输出类型与后者的输入类型必须匹配
+  trans_compose = transforms.Compose([trans_resize_2, trans_totensor])
+  img_resize_2 = trans_compose(img)  # 输入需要是PIL Image
+  writer.add_image("Resize", img_resize_2, 1)
+  writer.close()
+  
+  ```
+
+#### 3.5.6 RandomCrop 的使用
 
 
 
