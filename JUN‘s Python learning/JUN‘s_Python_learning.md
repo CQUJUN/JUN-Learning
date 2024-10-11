@@ -2337,9 +2337,29 @@ a = Woman("小芳")
 
 **方法2：使用`super()`调用父类成员**
 
+> python3.X的方法
+
 使用成员变量：`super().成员变量`
 
 使用成员方法：`super().成员方法()`
+
+> python2.X的方法
+
+使用成员方法：`super(父类名, self).成员方法()`
+
+**方法3：借助`pycharm`小工具**
+
+1. 打开`pycharm`上方代码栏
+
+   ![17](./JUN‘s_Python_learning.assets/17.png)
+
+2. 点击**重写方法**
+
+   ![18](./JUN‘s_Python_learning.assets/18.png)
+
+3. 选择**需要重写的方法**并点击确认
+
+   ![19](./JUN‘s_Python_learning.assets/19.png)
 
 #### 8.5.4 多继承基本概念
 

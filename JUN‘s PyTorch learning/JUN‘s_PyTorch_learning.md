@@ -1118,7 +1118,7 @@ writer = SummaryWriter("logs")
 # Transforms使用
 tensor_trans = transforms.ToTensor()  #从工具箱transforms里取出ToTensor类，返回tensor_trans对象
 tensor_img = tensor_trans(img)   #创建出tensor_trans后，传入其需要的参数，即可返回结果
-#print(tensor_img)
+print(tensor_img)
 
 writer.add_image("Tensor_img",tensor_img)  # .add_image(tag, img_tensor, global_step)
 # tag即名称
@@ -1221,7 +1221,7 @@ writer.close()
 
 `Resize` 接受以下参数：
 
-1. **size**：一个整数或一个元组。**若为整数**，图像的**较短边**将被调整为该值，保持图像的纵横比；若为元组，指定图像的**目标宽度和高度**。
+1. **size**：一个整数或一个元组。**若为整数**，图像的**较短边**将被调整为该值，**保持图像的纵横比**；若为元组，指定图像的**目标宽度和高度**。
 2. **interpolation**：插值方法，可选，默认是 `PIL.Image.BILINEAR`。可选的插值方法有 `PIL.Image.NEAREST`、`PIL.Image.BOX`、`PIL.Image.BILINEAR`、`PIL.Image.HAMMING`、`PIL.Image.BICUBIC` 和 `PIL.Image.LANCZOS`。
 
 - **一个整数：**不改变高和宽的比例，只单纯改变最小边和最长边之间的大小关系。之前图里最小的边将会匹配这个数（等比缩放）
@@ -1259,6 +1259,8 @@ writer.close()
 #### 3.5.5 Compose 的使用
 
 用于将多个**图像变换组合在一起**，以便在数据预处理过程中**一次性应用**，对于构建数据处理流水线非常方便
+
+**例子：**
 
 ```python
 Example:图片首先要经过中心裁剪，再转换成Tensor数据类型
@@ -1301,6 +1303,547 @@ Example:图片首先要经过中心裁剪，再转换成Tensor数据类型
   ```
 
 #### 3.5.6 RandomCrop 的使用
+
+用于**随机裁剪图像的指定区域**
+
+**裁剪的位置是随机选择的**
+
+它是图像数据增强的一种常用手段，通过裁剪不同区域来增加数据的多样性，从而防止模型过拟合，提高模型的泛化能力
+
+`RandomCrop` 的核心参数是**目标裁剪的尺寸**，此外还有一些可选参数，用于控制裁剪方式。
+
+**参数说明：**
+
+1. **size**：裁剪后的尺寸。可以是一个整数（表示裁剪一个该整数×该整数的图像）或一个二元元组 `(height, width)`，表示裁剪后的高和宽。
+2. **padding**：可选，表示在裁剪前在图像四周进行填充。默认是 `None`，不填充。
+3. **pad_if_needed**：布尔值，若为 `True`，在裁剪过程中，如果图像的尺寸小于 `size`，会自动填充到合适的尺寸。
+4. **fill**：用于填充的值。可以是数值或元组，默认为 `0`，通常用于在 `padding` 的时候指定填充值。
+5. **padding_mode**：可选参数，控制填充模式，常见的值有 `'constant'`、`'edge'`、`'reflect'`、`'symmetric'`。
+
+> 当指定的裁剪尺寸大于原始图像尺寸时，可以通过 `padding` 或 `pad_if_needed` 来处理边界情况
+
+```python
+from PIL import Image
+from torch.utils.tensorboard import SummaryWriter
+from torchvision import transforms
+
+writer = SummaryWriter("logs")
+img = Image.open("Data/hymenoptera_data/train/ants_image/0013035.jpg")
+print(img.size)  # 输入是PIL.Image
+
+# ToTensor的使用
+trans_totensor = transforms.ToTensor()  # 将类型转换为tensor
+
+#RandomCrop()的使用
+trans_random = transforms.RandomCrop((100,200))
+trans_compose_2 = transforms.Compose([trans_random,trans_totensor])
+for i in range(10):  #裁剪10个
+    img_crop = trans_compose_2(img)
+    writer.add_image("RandomCropHW",img_crop,i)
+
+writer.close()
+```
+
+### 3.6 总结使用方法
+
+- 关注输入和输出类型
+
+- 多看官方文档
+
+- 关注方法需要什么参数：参数如果设置了默认值，保留默认值即可，没有默认值的需要指定（看一下要求传入什么类型的参数）
+
+- 不知道变量的
+
+  **输出**
+
+  类型可以
+
+  - 直接print该变量
+  - print(type())，看结果里显示什么类型
+  - 断点调试 dubug
+
+- 最后要 totensor，在 tensorboard 看一下结果（tensorboard需要tensor数据类型进行显示）
+
+## 4. torchvision 中的数据集使用
+
+`torchvision` 是 PyTorch 中的一个专门用于 **计算机视觉任务** 的子库，它提供了许多常用的数据集、预处理变换（transforms）、预训练模型以及图像处理相关的工具。
+
+`torchvision` 的设计目的是简化处理图像数据的流程，特别是在深度学习任务中，例如图像分类、目标检测和图像分割。
+
+**打开官网**
+
+```http
+https://pytorch.org/
+```
+
+![24](./JUN‘s_PyTorch_learning.assets/24.png)
+
+### 4.1 **torchvision**的核心组件
+
+`torchvision` 主要包含以下几个核心模块：
+
+1. **`torchvision.datasets`**：用于加载常见的标准数据集。它支持自动下载和处理多种常见的数据集，比如：
+
+   - **MNIST**：手写数字识别数据集
+   - **CIFAR-10**、**CIFAR-100**：小型彩色图像数据集，**物体识别**
+   - **ImageNet**：大型图像分类数据集
+   - **COCO**：常用于目标检测、分割和图像描述的数据集
+   - **FashionMNIST**、**CelebA**、**SVHN** 等
+
+   通过这些数据集，用户可以快速加载和使用标准数据集进行模型训练和评估。
+
+2. **`torchvision.transforms`**：用于对图像进行数据预处理和增强。常见的图像变换包括：
+
+   - **Resize**：调整图像大小
+   - **RandomCrop**：随机裁剪图像
+   - **Normalize**：标准化图像
+   - **ToTensor**：将 `PIL` 图像或 `NumPy` 数组转换为 PyTorch 张量
+   - **RandomHorizontalFlip**：随机水平翻转图像
+
+   这些变换可以通过 `transforms.Compose()` 来组合，形成数据处理的流水线。
+
+3. **`torchvision.models`**：提供了许多 **预训练的深度学习模型**，例如：
+
+   - **ResNet**：残差网络，用于图像分类
+   - **VGG**：经典卷积神经网络架构
+   - **AlexNet**、**GoogLeNet**、**Inception**、**MobileNet**、**EfficientNet** 等
+
+   这些模型可以直接用于迁移学习或作为基准模型。你可以加载这些模型，并选择是否使用基于 ImageNet 的预训练权重。
+
+4. **`torchvision.io`**：提供了图像和视频的输入输出工具，用于读取和保存图像、视频文件，不常用
+
+5. **`torchvision.ops`**：包含了一些计算机视觉中特有的操作函数（如边界框、非极大值抑制等），这些操作通常在目标检测和图像分割任务中使用，不常用。
+
+6. **`torchvision.utils`**：提供一些常用的小工具，如**TensorBoard**
+
+### 4.2 torchvision.datasets
+
+#### 4.2.1 CIFAR10数据集
+
+**CIFAR-10** 数据集是一个常用于图像分类任务的标准数据集，它包含 10 个类别的 60,000 张彩色图像。
+
+**CIFAR-10** 的图片大小为 **32x32 像素**，每张图片有 **3 个通道（RGB）**
+
+![26](./JUN‘s_PyTorch_learning.assets/26.png)
+
+![25](./JUN‘s_PyTorch_learning.assets/25.png)
+
+- **`root`**
+
+  - **作用**：指定存储数据集的根目录。
+
+  - **解释**：这是数据集下载或加载的位置。如果数据集已经存在于此目录下，`torchvision` 会直接加载它；否则，如果 `download=True`，它会**下载数据集并存储在这个路径下**。
+
+- **`train`**（布尔型，默认为 `True`）
+
+  - **作用**：指定加载**训练集**还是**测试集**。
+
+  - **解释**：如果设置为 `True`，加载的是 50,000 张训练图片；如果设置为 `False`，加载的是 10,000 张测试图片。
+
+- **`transform`**（可选，默认为 `None`）
+
+  - **作用**：在此处输入对数据集中的图片的变换操作。
+
+  - **解释**：这是对每张图片进行的预处理操作，通常用来将图片转换为 PyTorch 张量（`ToTensor()`），或进行数据增强（如裁剪、翻转等）。可以使用 `torchvision.transforms.Compose` 来组合多个变换操作。
+
+  - ```python
+    transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))  # 归一化到 [-1, 1]
+    ])
+    ```
+
+- **`target_transform`**（可选，默认为 `None`）
+
+  - **作用**：对数据集中的**目标标签**进行变换。
+
+  - **解释**：用于对数据集中的**目标标签**进行变换。通常在分类问题中，标签通常是一个整数（0~9，对应10个类别），而在有时你可能需要对标签进行额外处理，比如将标签转换为独热编码（one-hot encoding）。
+
+- **`download`**（布尔型，默认为 `False`）
+
+  - **作用**：指定是否下载数据集。
+
+  - **解释**：如果设置为 `True`，CIFAR-10 数据集会从网上下载到 `root` 目录中。如果数据已经存在于指定目录，则不会重新下载；否则，它会自动下载并解压。
+
+- **`dataset`返回值**
+  - `__getitem()__`：return img，target
+
+#### 4.2.2 数据集下载、查看、使用
+
+1. **数据集下载：**
+
+   > **root使用相对路径，会在该.py所在位置创建一个叫dataset的文件夹，同时把数据集保存进去**
+
+   ```python
+   #如何使用torchvision提供的标准数据集
+   import torchvision
+   
+   train_set=torchvision.datasets.CIFAR10(
+       root="./dataset",
+       train=True,
+       download=True) #root使用相对路径，会在该.py所在位置创建一个叫dataset的文件夹，同时把数据保存进去
+   
+   test_set=torchvision.datasets.CIFAR10(
+       root="./dataset",
+       train=False,
+       download=True)
+   
+   print(test_set[0])  # 查看测试集中的第一个数据，是一个元组：(img, target)
+   print(test_set.classes)  # 列表
+   
+   # 查看测试集中的第一个数据，是一个元组：(img, target)
+   img,target = test_set[0]
+   print(img)
+   print(target)  # 3
+   print(test_set.classes[target])  # cat
+   img.show()
+   ```
+
+   > 如果数据集已经存在于此目录下，`torchvision` 会直接加载它；否则，如果 `download=True`，它会**下载数据集并存储在这个路径下**
+
+   **数据集下载过慢时：**
+
+   获得下载链接后，把下载链接放到迅雷中，会首先下载压缩文件tar.gz，之后会对该压缩文件进行解压，里面会有相应的数据集
+
+   因为在迅雷中不一定从原始地址进行下载，可能从他人已经下载好的资源中下载，从而**进行加速**
+
+   ![27](./JUN‘s_PyTorch_learning.assets/27.png)
+
+   采用迅雷下载完毕后，在PyCharm里新建directory(文件目录)，名字也叫dataset，再将下载好的压缩包复制进去，download依然为True，运行后，会自动解压该数据
+
+   **没有显示下载地址时：**
+
+   按住Ctrl键，查看数据集的源代码，若其中有 url地址，可直接复制到迅雷中进行下载
+
+2. **数据集查看：**
+
+   通过`print(test_set[0])`查看到该数据集返回值为元组：`(img, target)`
+
+   通过程序的`debug`可以看到测试集中有`classes`列表存储**图片的类别**
+
+   ![28](./JUN‘s_PyTorch_learning.assets/28.png)
+
+   故通过输入目标标签`target`便可查询该图片的类别
+
+   ```python
+   print(test_set.classes[target])
+   ```
+
+3. **数据集的使用：**
+
+   > **把数据集（多张图片）和 transforms 结合在一起**
+
+   CIFAR10数据集原始图片是`PIL Image`，如果要给`pytorch`使用，需要转为`tensor`数据类型（转成`tensor`后，就可以用`tensorboard`了）
+
+   > **transforms 更多地是用在 datasets 里 transform 的选项中**
+
+   ```python
+   import torchvision
+   from torch.utils.tensorboard import SummaryWriter
+    
+   #把dataset_transform运用到数据集中的每一张图片，都转为tensor数据类型
+   dataset_transform = torchvision.transforms.Compose([
+       torchvision.transforms.ToTensor()
+   ])
+    
+   train_set=torchvision.datasets.CIFAR10(
+       root="./dataset",				# 数据集保存的根目录
+       train=True,						# 加载训练集
+       transform=dataset_transform,	# 预处理变换
+       download=True)					# 如果没有数据集则下载
+   
+   test_set=torchvision.datasets.CIFAR10(
+       root="./dataset",				# 数据集保存的根目录
+       train=False,					# 加载训练集
+       transform=dataset_transform,	# 预处理变换
+       download=True)					# 如果没有数据集则下载
+    
+   print(test_set[0])
+    
+   writer = SummaryWriter("logs")
+   #显示测试数据集中的前10张图片
+   for i in range(10):
+       img,target = test_set[i]
+       writer.add_image("test_set",img,i)  # img已经转成了tensor类型
+    
+   writer.close()
+   ```
+
+   **结果图：**
+
+   ![29](./JUN‘s_PyTorch_learning.assets/29.png)
+
+### 4.3 DataLoader 的使用
+
+`DataLoader` 是 PyTorch 中用于加载数据的核心工具，它能够轻松处理大型数据集，将数据分批（batch）加载到内存中并传递给模型
+
+`DataLoader` 一般与 `Dataset` 类（如 `torchvision.datasets` 中的 `CIFAR10`）结合使用，它从 `Dataset` 对象中提取数据，并且根据用户设定的参数进行批量加载和预处理
+
+- **dataset：**告诉程序中数据集的位置，数据集中索引，数据集中有多少数据（想象成一叠扑克牌）
+- **dataloader：**将数据加载到神经网络中，每次从dataset中取数据，通过dataloader中的参数可以设置**如何取数据**（想象成抓的一组牌）
+
+**语法**
+
+```python
+torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False, num_workers=0, collate_fn=None, drop_last=False)
+```
+
+#### 4.3.1 DataLoader参数详解
+
+1. **`dataset`**（必填）
+   - **作用**：要加载的数据集，通常是一个继承了 `torch.utils.data.Dataset` 类的对象，如 `CIFAR10`、自定义数据集等。
+   - **解释**：`DataLoader` 会从 `dataset` 对象中提取数据。你需要提前定义好数据集的来源，并将其传递给 `DataLoader`。
+2. **`batch_size`**（整数，可选，默认为 `1`）
+   - **作用**：每次加载数据的批次大小，即每次**返回多少个样本**。
+   - **解释**：设置为 `32` 时，表示每次从数据集中返回 32 个样本。**批量处理**能够**加速模型训练**，并且在神经网络训练中非常常见。
+3. **`shuffle`**（布尔型，可选，默认为 `False`）
+   - **作用**：是否在每个 **epoch(时期、轮次)** 开始时将数据打乱。
+   - **解释**：如果设置为 `True`，在每次**迭代之前**会**随机打乱**数据集中的样本，这有助于提升模型的**泛化能力**。在训练集上常设置为 `True`，在测试集上通常设置为 `False` 以保证一致性
+4. **`num_workers`**（整数，可选，默认为 `0`）
+   - **作用**：使用多少个子进程来加载数据。
+   - **解释**：设置为 `0` 时，数据加载将在主进程中进行；设置为大于 0 的整数时，会开启多个进程并行加载数据，通常可以提高数据加载的效率。一般可以根据机器的 CPU 核心数来设置。
+5. **`collate_fn`**（可选，默认为 `None`）
+   - **作用**：如何将一个 **batch(批次,将数据集分成小批量数据进行训练的一个子集)** 的数据组合在一起。
+   - **解释**：默认情况下，`DataLoader` 会将一个 batch 的数据堆叠成张量，但如果你的数据格式不统一，或者需要自定义组合方式，可以传递一个自定义函数。常见的用例是在处理变长序列时自定义 `collate_fn`，不常用。
+6. **`drop_last`**（布尔型，可选，默认为 `False`）
+   - **作用**：如果数据集的大小不能被 `batch_size` 整除，是否**丢弃最后一批次**。
+   - **解释**：当数据集大小不是 `batch_size` 的整数倍时，最后一个 batch 的样本数可能会小于 `batch_size`。如果设置为 `True`，则丢弃这个不足的 batch；设置为 `False`，则保留它
+
+#### 4.3.2 DataLoader使用
+
+通过dataloader中的参数可以设置**如何取数据**
+
+```python
+# CIFAR10原本是PIL Image，需要转换成tensor
+import torchvision.datasets
+from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
+
+# 准备的测试数据集
+test_data=torchvision.datasets.CIFAR10(
+    root="./dataset",
+    train=False,
+    transform=torchvision.transforms.ToTensor(),
+	download=True)
+
+# 加载测试集
+test_loader=DataLoader(
+    dataset=test_data,
+    batch_size=64,
+    shuffle=True,
+    num_workers=0,
+    drop_last=False)
+#batch_size=64，意味着每次从test_data中取64个数据进行打包
+
+writer = SummaryWriter("dataloader")
+step=0
+for data in test_loader:
+    imgs,targets = data  #imgs是tensor数据类型
+    writer.add_images("test_data",imgs,step)
+    step=step+1
+
+writer.close()
+```
+
+> **`batch_size=64`**
+>
+> - **意味着每次从test_data中取64个数据进行打包**
+
+运行结果如图，滑动滑块即是每一次取数据时的**batch_size张图片**：
+
+![30](./JUN‘s_PyTorch_learning.assets/30.png)
+
+> **`shuffle=True`**
+>
+> - **一个 for data in test_loader 循环，就意味着打完一轮牌（抓完一轮数据）**
+>
+>   **在下一轮再进行抓取时，第二次数据是否与第一次数据一样。值为True的话，会重新洗牌（一般都设置为True）**
+>
+> - **shuffle为False的话两轮取的图片是一样的**
+>
+> **`drop_last`**
+>
+> - **若将 drop_last 设置为 True，最后16张图片（step 156）会被舍去**
+
+## 5. 神经网络
+
+### **5.1 基本骨架--nn.Module 的使用**
+
+`nn.Module` 是所有神经网络模型的基类
+
+[torch.nn — PyTorch 1.10 documentation](https://pytorch.org/docs/stable/nn.html)
+
+> Pytorch官网左侧：Python API（相当于package，提供了一些不同的工具）
+>
+> **关于神经网络的工具主要在torch.nn里**
+
+<img src="./JUN‘s_PyTorch_learning.assets/31.png" alt="31" style="zoom: 67%;" />
+
+#### 5.1.1 Containers--骨架
+
+**`Containers`包含6个模块：**
+
+- **Module**
+- **Sequential**
+- **ModuleList**
+- **ModuleDict**
+- **ParameterList**
+- **ParameterDict**
+
+> 其中最常用的是 **Module 模块**（`nn.Module` 是所有神经网络模型的基类，为**所有**神经网络提供基本骨架）
+
+```python
+CLASS torch.nn.Module  #搭建的 Model都必须继承该类
+```
+
+**官网上关于Module的模板(以Python 3.X为底)**
+
+```python
+import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):				#搭建的神经网络 Model继承了 Module类（父类）
+    def __init__(self):				#初始化函数
+        super().__init__()			#必须要这一步，调用父类的初始化函数
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):			#前向传播（为输入和输出中间的处理过程），x为输入
+        x = F.relu(self.conv1(x))	#conv为卷积，relu为非线性处理
+        return F.relu(self.conv2(x))
+```
+
+- **前向传播 `forward`**，在所有子类中进行重写，每个子类需要实现 `forward` 方法，重新定义数据通过神经网络的流动方式
+
+  ![32](./JUN‘s_PyTorch_learning.assets/32.png)
+
+  模板中`forward`的流动方式：**`输入 --> 卷积 --> 非线性 --> 卷积 --> 非线性 --> 输出`**
+
+- **反向传播 `backward`**，主要用于计算每个参数的梯度，从而优化模型的权重
+
+实例：
+
+```python
+import torch
+from torch import nn
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self,input):
+        output = input + 1
+        return output
+
+model = Model()   		# 拿Model模板创建出的神经网络
+x = torch.tensor(1.0)  	# 将1.0这个数转换成tensor类型
+output = model(x)
+print(output)			# 输出tensor(2.)
+```
+
+> **任何继承自 `nn.Module` 的类，当你对其实例进行前向传播时，会隐式地调用 `forward` 方法**
+>
+> **调用模型实例并传入输入数据时，如 `output = model(input_data)`，PyTorch 会自动调用 `model.forward(input_data)`。**
+
+### 5.2 神经网络卷积操作
+
+#### 5.2.1 卷积层基本概念
+
+[torch.nn — PyTorch 1.10 documentation](https://pytorch.org/docs/stable/nn.html#convolution-layers)
+
+![33](./JUN‘s_PyTorch_learning.assets/33.png)
+
+[Conv2d — PyTorch 1.10 documentation](https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d)
+
+> torch.nn 和 torch.nn.functional 的区别：前者是后者的封装，更利于使用
+
+**所以先使用nn.functional进行学习**
+
+**点击 torch.nn.functional - Convolution functions - conv2d**
+
+![34](./JUN‘s_PyTorch_learning.assets/34.png)
+
+- **输入**：
+  - 输入通常是一个四维张量，形状为 `(batch_size, channels, height, width)`。
+  - `batch_size`：批处理中的样本数。
+  - `channels`：输入的通道数（例如，灰度图像为 1，RGB 图像为 3）。
+  - `height` 和 `width`：输入图像的高度和宽度。
+- **卷积核（Filter）**：
+  - 卷积核是一个小的权重矩阵（例如 3x3 或 5x5），用于特征提取。
+  - 卷积核的形状为 `(out_channels, in_channels, kernel_height, kernel_width)`。
+- **参数**：
+  - **Stride**：每次滑动卷积核的步幅。
+  - **Padding**：在输入周围添加的边界，控制输出尺寸。
+  - **Dilation**：控制卷积核元素之间的间距
+
+#### 5.2.2 Stride（步进）
+
+**定义**：
+
+- 步幅指的是卷积核在每次滑动时**移动的像素数**。
+- 在一个**二维卷积操作**中，步幅通常用两个值表示：`stride_height` 和 `stride_width`，分别对应于**高度和宽度的滑动步幅**。
+
+**常见值**：
+
+- 常见的步幅值为1或2：
+  - **Stride=1**：卷积核每次滑动一个像素，生成的特征图较大。
+  - **Stride=2**：卷积核每次滑动两个像素，生成的特征图较小，减少了特征图的尺寸。
+
+**如下图 Stride=1  ：**
+
+![35](./JUN‘s_PyTorch_learning.assets/35.png)
+
+通过卷积核重叠在图像上步进为1的移动，**输入图像与卷积核矩阵相乘**
+
+![36](./JUN‘s_PyTorch_learning.assets/36.png)
+
+移动第0步时，**矩阵相乘**，从左到右，从上到下`1*1+2*2+1*0+0*0+1*1+0*2+1*2+2*1+0*1=10`
+
+![37](./JUN‘s_PyTorch_learning.assets/37.png)
+
+移动第1步时，**矩阵相乘**，从左到右，从上到下`1*2+2*0+1*3+0*1+1*2+0*3+2*2+1*1+0*0=12`
+
+![38](./JUN‘s_PyTorch_learning.assets/38.png)
+
+移动第2步时，**矩阵相乘**，从左到右，从上到下`1*0+2*3+1*1+0*2+1*3+0*1+2*1+1*0+0*0=12`
+
+**可以得到卷积后的输出**
+
+
+
+**步幅的影响：**
+
+- 步幅会直接影响输出特征图的大小。其计算公式如下：
+
+$$
+Output Height=\left[ \frac{InputHeight−KernelHeight+2×PaddingHeight}{StrideHeight}
+ \right]+1
+$$
+
+$$
+OutputWidth=\left[ \frac{InputWidth−KernelWidth+2×PaddingWidth}{StrideWidth}
+ \right]+1
+$$
+
+​	其中，`floor` 表示向下取整。
+
+- **特征图的分辨率**：较大的步幅会导致输出特征图分辨率降低，因为卷积核跳过了某些输入区域。这可能会**丢失一些细节信息**，但也能**减少计算量**。
+
+- **计算效率**：使用较大的步幅可以加速计算，**减少卷积操作的时间复杂度**，因为每次计算的区域更大，**减少了计算次数**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
